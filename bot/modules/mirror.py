@@ -240,7 +240,7 @@ class MirrorListener:
                             source_link = reply_text.strip()
                             if is_magnet(source_link):
                                 link = telegraph.create_page(
-                                    title='Helios-Mirror Source Link',
+                                    title='Dark Lord-Mirror Source Link',
                                     content=source_link,
                                 )["path"]
                                 buttons.buildbutton(f"🔗 Source Link", f"https://telegra.ph/{link}")
@@ -273,10 +273,11 @@ class MirrorListener:
                     uploadmsg = sendMarkup(msg + fmsg, self.bot, self.message, InlineKeyboardMarkup(buttons.build_menu(2)))
                     Thread(target=auto_delete_upload_message, args=(bot, self.message, uploadmsg)).start()
         else:
-            msg += f'\n\n<b>├ Type: </b>{typ}'
+            msg += f'\n<b>├ Type: </b>{typ}'
             if ospath.isdir(f'{DOWNLOAD_DIR}{self.uid}/{name}'):
                 msg += f'\n<b>├ SubFolders: </b>{folders}'
                 msg += f'\n<b>├ Files: </b>{files}'
+                msg += f'\n<b>├ Action: #mirror </b>'
             msg += f'\n<b>└ CC: </b>{self.tag}'
             buttons = ButtonMaker()
             link = short_url(link)
