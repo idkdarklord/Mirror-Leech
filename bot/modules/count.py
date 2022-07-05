@@ -30,6 +30,7 @@ def countNode(update, context):
         gd = GoogleDriveHelper()
         result = gd.count(link)
         deleteMessage(context.bot, msg)
+        msg += f'\n<b>├ Action: #count </b>'
         cc = f'\n\n<b>└ CC: </b>{tag}'
         sendMessage(result + cc, context.bot, update.message)
     else:
