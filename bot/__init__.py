@@ -457,6 +457,27 @@ try:
 except:
     CRYPT = None
 try:
+  FSUB = getConfig('FSUB')
+  FSUB = FSUB.lower() == 'True'
+except:
+  FSUB = False
+  LOGGER.info("Force Sub Is Disabled!")
+try:
+  CHANNEL_USERNAME = getConfig("CHANNEL_USERNAME")
+  if len(CHANNEL_USERNAME) == 0:
+    raise KeyError
+except KeyError:
+  log_info("CHANNEL_USERNAME not provided! Using @darklordmirror")
+  CHANNEL_USERNAME = "darklordmirror"
+try:
+  FSUB_CHANNEL_ID = getConfig("FSUB_CHANNEL_ID")
+  if len(FSUB_CHANNEL_ID) == 0:
+  raise KeyError
+  FSUB_CHANNEL_ID = int(FSUB_CHANNEL_ID)
+except KeyError:
+  log_info("Channel_ID Not Provided! Using Default Id Of @darklordmirror")
+  FSUB_CHANNEL_ID = -1001779452858
+try:
     AUTHOR_NAME = getConfig('AUTHOR_NAME')
     if len(AUTHOR_NAME) == 0:
         AUTHOR_NAME = 'Arsh Sisodiya'
