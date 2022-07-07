@@ -407,7 +407,7 @@ def _mirror(bot, message, isZip=False, extract=False, isQbit=False, isLeech=Fals
     
     if FSUB:
         try:
-            uname = message.from_user.mention_html(message.from_user.first.name)
+            uname = message.from_user.mention_html(message.from_user.first_name)
             user = bot.get_chat_member(FSUB_CHANNEL_ID, message.from_user.id)
             if user.status not in ['member', 'creator', 'administrator']:
                 buttons.buildbutton("🎥 Dark Lord Mirror", f"https://t.me/{CHANNEL_USERNAME}")
