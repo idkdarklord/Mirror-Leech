@@ -404,6 +404,18 @@ class MirrorListener:
 
 def _mirror(bot, message, isZip=False, extract=False, isQbit=False, isLeech=False, pswd=None, multi=0):
     buttons = ButtonMaker()
+    
+    if FSUB:
+        try:
+          uname = message.from_user.mention_html(message.from_user.first.name)
+          user = bot.get_chat_member(FSUB_CHANNEL_ID, message.from_user.id)
+          if user.status not in ['member', 'creator', 'administrator']:
+            buttons.buildbutton("🎥 Dark Lord Mirror", f"https://t.me/{CHANNEL_USERNAME}")
+            reply_markup = InlineKeyboardMarkup(buttons.build_menu(1))
+            return sendMarkup(f"<b>💡 Dear {uname},\nYou have to join our channel yet!\n🔻 Please Join To <u>Use Our Bot Without Any Restrictions!</u></b>", bot, message, reply_markup)
+          except Exception as e:
+            LOGGER.info(str(e))
+            
     if BOT_PM and message.chat.type != 'private':
         try:
             msg1 = f'Added your Requested link to Download\n'
