@@ -466,9 +466,9 @@ except KeyError:
 try:
     GD_INFO = getConfig('GD_INFO')
     if len(GD_INFO) == 0:
-        GD_INFO = 'Uploaded by Dark Lord Mirror Bot'
+        GD_INFO = 'Uploaded by Dark Lord Mirror-Bot'
 except KeyError:
-    GD_INFO = 'Uploaded by Dark Lord Mirror Bot'
+    GD_INFO = 'Uploaded by Dark Lord Mirror-Bot'
 
 try:
     TITLE_NAME = getConfig('TITLE_NAME')
