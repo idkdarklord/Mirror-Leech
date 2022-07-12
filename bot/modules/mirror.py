@@ -1,5 +1,5 @@
 from base64 import b64encode
-from requests import utils as rutils, get as rget
+from requests import utils as rutils
 from re import match as re_match, search as re_search, split as re_split
 from time import sleep, time
 from os import path as ospath, remove as osremove, listdir, walk
@@ -12,8 +12,8 @@ from telegram.ext import CommandHandler
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, ParseMode
 from bot import bot, Interval, INDEX_URL, BUTTON_FOUR_NAME, BUTTON_FOUR_URL, BUTTON_FIVE_NAME, BUTTON_FIVE_URL, \
                 BUTTON_SIX_NAME, BUTTON_SIX_URL, VIEW_LINK, aria2, QB_SEED, dispatcher, DOWNLOAD_DIR, \
-                download_dict, download_dict_lock, TG_SPLIT_SIZE, LOGGER, DB_URI, INCOMPLETE_TASK_NOTIFIER, \
-                MEGAREST, LEECH_LOG, SOURCE_LINK, BOT_PM, MIRROR_LOGS, FSUB, CHANNEL_USERNAME, FSUB_CHANNEL_ID, AUTO_DELETE_UPLOAD_MESSAGE_DURATION
+                download_dict, download_dict_lock, TG_SPLIT_SIZE, LOGGER, MEGA_KEY, DB_URI, INCOMPLETE_TASK_NOTIFIER, \
+                LEECH_LOG, SOURCE_LINK, BOT_PM, MIRROR_LOGS, AUTO_DELETE_UPLOAD_MESSAGE_DURATION
 from bot.helper.ext_utils.bot_utils import is_url, is_magnet, is_gdtot_link, is_mega_link, is_gdrive_link, get_content_type
 from bot.helper.ext_utils.fs_utils import get_base_name, get_path_size, split_file, clean_download
 from bot.helper.ext_utils.shortenurl import short_url
@@ -21,8 +21,7 @@ from bot.helper.ext_utils.exceptions import DirectDownloadLinkException, NotSupp
 from bot.helper.mirror_utils.download_utils.aria2_download import add_aria2c_download
 from bot.helper.mirror_utils.download_utils.gd_downloader import add_gd_download
 from bot.helper.mirror_utils.download_utils.qbit_downloader import QbDownloader
-from bot.helper.mirror_utils.download_utils.mega_downloader import add_mega_download
-from bot.helper.mirror_utils.download_utils.megarestsdkhelper import MegaDownloadeHelper
+from bot.helper.mirror_utils.download_utils.mega_downloader import MegaDownloader
 from bot.helper.mirror_utils.download_utils.direct_link_generator import direct_link_generator
 from bot.helper.mirror_utils.download_utils.telegram_downloader import TelegramDownloadHelper
 from bot.helper.mirror_utils.status_utils.extract_status import ExtractStatus
@@ -82,7 +81,7 @@ class MirrorListener:
             try:
                 with download_dict_lock:
                     download_dict[self.uid] = ZipStatus(name, m_path, size)
-                path = f"{m_path}.zip"
+                path = m_path + ".zip"
                 LOGGER.info(f'Zip: orig_path: {m_path}, zip_path: {path}')
                 if self.pswd is not None:
                     if self.isLeech and int(size) > TG_SPLIT_SIZE:
@@ -184,6 +183,7 @@ class MirrorListener:
                 reply_to.delete()
             except Exception as error:
                 LOGGER.warning(error)
+                pass
         error = error.replace('<', ' ').replace('>', ' ')
         clean_download(f'{DOWNLOAD_DIR}{self.uid}')
         with download_dict_lock:
@@ -217,14 +217,14 @@ class MirrorListener:
                     pass
         if not self.isPrivate and INCOMPLETE_TASK_NOTIFIER and DB_URI is not None:
             DbManger().rm_complete_task(self.message.link)
-        msg = f"<b>Name: </b><code>{escape(name)}</code>\n\n<b>Size: </b>{size}"
+        msg = f"<code>{escape(name)}</code>\n<b>┌ Size: </b>{size}"
         if self.isLeech:
             if SOURCE_LINK is True:
                 try:
                     source_link = message_args[1]
                     if is_magnet(source_link):
                         link = telegraph.create_page(
-                        title='Helios-Mirror Source Link',
+                        title='Dark Lord-Mirror Source Link',
                         content=source_link,
                     )["path"]
                         buttons.buildbutton(f"🔗 Source Link", f"https://telegra.ph/{link}")
@@ -240,7 +240,7 @@ class MirrorListener:
                             source_link = reply_text.strip()
                             if is_magnet(source_link):
                                 link = telegraph.create_page(
-                                    title='Helios-Mirror Source Link',
+                                    title='Dark Lord-Mirror Source Link',
                                     content=source_link,
                                 )["path"]
                                 buttons.buildbutton(f"🔗 Source Link", f"https://telegra.ph/{link}")
@@ -254,10 +254,11 @@ class MirrorListener:
                 b_uname = bot_d.username
                 botstart = f"http://t.me/{b_uname}"
                 buttons.buildbutton("View file in PM", f"{botstart}")
-            msg += f'\n<b>Total Files: </b>{folders}'
+            msg += f'\n<b>├ Total Files: </b>{folders}'
             if typ != 0:
-                msg += f'\n<b>Corrupted Files: </b>{typ}'
-            msg += f'\n<b>cc: </b>{self.tag}\n\n'
+                msg += f'\n<b>├ Corrupted Files: </b>{typ}'
+                msg += f'\n<b>├ Action: #mirror </b>'
+            msg += f'\n<b>└ CC: </b>{self.tag}\n\n'
             if not files:
                 uploadmsg = sendMessage(msg, self.bot, self.message)
             else:
@@ -272,11 +273,12 @@ class MirrorListener:
                     uploadmsg = sendMarkup(msg + fmsg, self.bot, self.message, InlineKeyboardMarkup(buttons.build_menu(2)))
                     Thread(target=auto_delete_upload_message, args=(bot, self.message, uploadmsg)).start()
         else:
-            msg += f'\n\n<b>Type: </b>{typ}'
+            msg += f'\n<b>├ Type: </b>{typ}'
             if ospath.isdir(f'{DOWNLOAD_DIR}{self.uid}/{name}'):
-                msg += f'\n<b>SubFolders: </b>{folders}'
-                msg += f'\n<b>Files: </b>{files}'
-            msg += f'\n\n<b>cc: </b>{self.tag}'
+                msg += f'\n<b>├ SubFolders: </b>{folders}'
+                msg += f'\n<b>├ Files: </b>{files}'
+                msg += f'\n<b>├ Action: #mirror </b>'
+            msg += f'\n<b>└ CC: </b>{self.tag}'
             buttons = ButtonMaker()
             link = short_url(link)
             buttons.buildbutton("☁️ Drive Link", link)
@@ -328,7 +330,7 @@ class MirrorListener:
                         source_link = reply_text.strip()
                         if is_magnet(source_link):
                             link = telegraph.create_page(
-                                title='Helios-Mirror Source Link',
+                                title='Dark Lord-Mirror Source Link',
                                 content=source_link,
                             )["path"]
                             buttons.buildbutton(f"🔗 Source Link", f"https://telegra.ph/{link}")
@@ -382,6 +384,7 @@ class MirrorListener:
                 reply_to.delete()
             except Exception as error:
                 LOGGER.warning(f"ewww {error}")
+                pass
         e_str = error.replace('<', '').replace('>', '')
         clean_download(f'{DOWNLOAD_DIR}{self.uid}')
         with download_dict_lock:
@@ -401,17 +404,6 @@ class MirrorListener:
 
 def _mirror(bot, message, isZip=False, extract=False, isQbit=False, isLeech=False, pswd=None, multi=0):
     buttons = ButtonMaker()
-    
-    if FSUB:
-        try:
-            uname = message.from_user.mention_html(message.from_user.first_name)
-            user = bot.get_chat_member(FSUB_CHANNEL_ID, message.from_user.id)
-            if user.status not in ['member', 'creator', 'administrator']:
-                buttons.buildbutton("🎥 Dark Lord Mirror", f"https://t.me/{CHANNEL_USERNAME}")
-                reply_markup = InlineKeyboardMarkup(buttons.build_menu(1))
-                return sendMarkup(f"<b>💡 Dear {uname},\nYou have to join our channel yet!\n🔻 Please Join To <u>Use Our Bot Without Any Restrictions!</u></b>", bot, message, reply_markup)
-        except Exception as e:
-            LOGGER.info(str(e))
     
     if BOT_PM and message.chat.type != 'private':
         try:
@@ -480,7 +472,12 @@ def _mirror(bot, message, isZip=False, extract=False, isQbit=False, isLeech=Fals
             else:
                 tag = reply_to.from_user.mention_html(reply_to.from_user.first_name)
 
-        if not is_url(link) and not is_magnet(link) or len(link) == 0:
+        if (
+            not is_url(link)
+            and not is_magnet(link)
+            or len(link) == 0
+        ):
+
             if file is None:
                 reply_text = reply_to.text
                 if is_url(reply_text) or is_magnet(reply_text):
@@ -527,32 +524,6 @@ def _mirror(bot, message, isZip=False, extract=False, isQbit=False, isLeech=Fals
                 LOGGER.info(str(e))
                 if str(e).startswith('ERROR:'):
                     return sendMessage(str(e), bot, message)
-    elif isQbit and not is_magnet(link) and not ospath.exists(link):
-        if link.endswith('.torrent') or "https://api.telegram.org/file/" in link:
-            content_type = None
-        else:
-            content_type = get_content_type(link)
-        if content_type is None or re_match(r'application/x-bittorrent|application/octet-stream', content_type):
-            try:
-                resp = rget(link, timeout=10, headers = {'user-agent': 'Wget/1.12'})
-                if resp.status_code == 200:
-                    file_name = str(time()).replace(".", "") + ".torrent"
-                    with open(file_name, "wb") as t:
-                        t.write(resp.content)
-                    link = str(file_name)
-                else:
-                    return sendMessage(f"{tag} ERROR: link got HTTP response: {resp.status_code}", bot, message)
-            except Exception as e:
-                error = str(e).replace('<', ' ').replace('>', ' ')
-                if error.startswith('No connection adapters were found for'):
-                    link = error.split("'")[1]
-                else:
-                    LOGGER.error(str(e))
-                    return sendMessage(tag + " " + error, bot, message)
-        else:
-            msg = "Qb commands for torrents only. if you are trying to dowload torrent then report."
-            return sendMessage(msg, bot, message)
-
 
     listener = MirrorListener(bot, message, isZip, extract, isQbit, isLeech, pswd, tag)
 
@@ -565,12 +536,11 @@ def _mirror(bot, message, isZip=False, extract=False, isQbit=False, isLeech=Fals
         else:
             Thread(target=add_gd_download, args=(link, listener, is_gdtot)).start()
     elif is_mega_link(link):
-        if MEGAREST:
-            mega_dl = MegaDownloadeHelper(listener).add_download
+        if MEGA_KEY is not None:
+            Thread(target=MegaDownloader(listener).add_download, args=(link, f'{DOWNLOAD_DIR}{listener.uid}/')).start()
         else:
-            mega_dl = add_mega_download
-        Thread(target=mega_dl, args=(link, f'{DOWNLOAD_DIR}{listener.uid}/', listener)).start()
-    elif isQbit and (is_magnet(link) or ospath.exists(link)):
+            sendMessage('MEGA_API_KEY not Provided!', bot, message)
+    elif isQbit:
         Thread(target=QbDownloader(listener).add_qb_torrent, args=(link, f'{DOWNLOAD_DIR}{listener.uid}', qbitsel)).start()
     else:
         if len(mesg) > 1:
