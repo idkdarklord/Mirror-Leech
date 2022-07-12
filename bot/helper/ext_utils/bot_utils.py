@@ -21,8 +21,8 @@ PAGE_NO = 1
 
 
 class MirrorStatus:
-    STATUS_UPLOADING = "Uploading...📤"
-    STATUS_DOWNLOADING = "Downloading...📥"
+    STATUS_UPLOADING = "Uploading...⬘"
+    STATUS_DOWNLOADING = "Downloading...⬙"
     STATUS_CLONING = "Cloning...♻️"
     STATUS_WAITING = "Queued...💤"
     STATUS_FAILED = "Failed 🚫. Cleaning Download..."
@@ -33,6 +33,9 @@ class MirrorStatus:
     STATUS_CHECKING = "CheckingUp...📝"
     STATUS_SEEDING = "Seeding...🌧"
 
+PROGRESS_MAX_SIZE = 100 // 9
+PROGRESS_INCOMPLETE = ['◔', '◔', '◑', '◑', '◑', '◕', '◕']
+    
 class EngineStatus:
     STATUS_ARIA = "Aria2c"
     STATUS_GDRIVE = "Google API"
@@ -117,9 +120,12 @@ def get_progress_bar_string(status):
     p = 0 if total == 0 else round(completed * 100 / total)
     p = min(max(p, 0), 100)
     cFull = p // 8
-    p_str = '▰' * cFull
-    p_str += '▱' * (12 - cFull)
-    p_str = f"[{p_str}]"
+    cPart = p % 8 - 1
+    p_str = '●' * cFull
+    if cPart >= 0:
+        p_str += PROGRESS_INCOMPLETE[cPart]
+    p_str += '○' * (PROGRESS_MAX_SIZE - cFull)
+    p_str = f"「{p_str}」"
     return p_str
 
 def get_readable_message():
@@ -133,57 +139,54 @@ def get_readable_message():
                 globals()['COUNT'] -= STATUS_LIMIT
                 globals()['PAGE_NO'] -= 1
         for index, download in enumerate(list(download_dict.values())[COUNT:], start=1):
-            msg += f"<b>Name:</b> <code>{escape(str(download.name()))}</code>"
-            msg += f"\n<b>Status:</b> <i>{download.status()}</i>\n<b>Engine:</b> {download.eng()}"
+            msg += f"<code>{escape(str(download.name()))}</code>"
+            msg += f"\n<b>┌ Status:</b> <i>{download.status()}</i>\n<b>├ Engine:</b> {download.eng()}"        
             if download.status() not in [
                 MirrorStatus.STATUS_ARCHIVING,
                 MirrorStatus.STATUS_EXTRACTING,
                 MirrorStatus.STATUS_SPLITTING,
                 MirrorStatus.STATUS_SEEDING,
             ]:
-                msg += f"\n{get_progress_bar_string(download)} {download.progress()}"
+                msg += f"\n<b>├ </b>{get_progress_bar_string(download)}\n<b><b>├ </b>Progress: </b>{download.progress()}"
                 if download.status() == MirrorStatus.STATUS_CLONING:
-                    msg += f"\n<b>Cloned:</b> {get_readable_file_size(download.processed_bytes())} of {download.size()}"
+                    msg += f"\n<b>├ Cloned:</b> {get_readable_file_size(download.processed_bytes())} of {download.size()}"
                 elif download.status() == MirrorStatus.STATUS_UPLOADING:
-                    msg += f"\n<b>Uploaded:</b> {get_readable_file_size(download.processed_bytes())} of {download.size()}"
+                    msg += f"\n<b>├ Downloaded:</b> {get_readable_file_size(download.processed_bytes())}\n<b>├ Total Size: </b>{download.size()}"
                 else:
-                    msg += f"\n<b>Downloaded:</b> {get_readable_file_size(download.processed_bytes())} of {download.size()}"
-                msg += f"\n<b>Speed:</b> {download.speed()} | <b>ETA:</b> {download.eta()}"
-                msg += f"\n<b>Time Elapsed: </b>{get_readable_time(time() - download.message.date.timestamp())}"
-                msg += f"\n<b>Engine:</b> {download.eng()}"
+                    msg += f"\n<b>├ Downloaded:</b> {get_readable_file_size(download.processed_bytes())}\n<b>├ Total Size: </b>{download.size()}"
+                msg += f"\n<b>├ Speed:</b> {download.speed()}\n<b>├ ETA:</b> {download.eta()}"
+                msg += f"\n<b>├ Elapsed: </b>{get_readable_time(time() - download.message.date.timestamp())}"
                 try:
-                    msg += f"\n<b>Seeders:</b> {download.aria_download().num_seeders}" \
-                           f" | <b>Peers:</b> {download.aria_download().connections}"
+                    msg += f"\n<b>├ Seeders:</b> {download.aria_download().num_seeders}" \
+                           f"\n<b>├ Peers:</b> {download.aria_download().connections}"
                 except:
                     pass
                 try:
-                    msg += f"\n<b>Seeders:</b> {download.torrent_info().num_seeds}" \
-                           f" | <b>Leechers:</b> {download.torrent_info().num_leechs}"
+                    msg += f"\n<b>├ Seeders:</b> {download.torrent_info().num_seeds}" \
+                           f"\n<b>├ Leechers:</b> {download.torrent_info().num_leechs}"
                 except:
                     pass
                 if download.message.chat.type != 'private':
                     try:
                         chatid = str(download.message.chat.id)[4:]
-                        msg += f'\n<b>Source: </b><a href="https://t.me/c/{chatid}/{download.message.message_id}">{download.message.from_user.first_name}</a> | <b>Id :</b> <code>{download.message.from_user.id}</code>'
+                        msg += f'\n<b>├ Source: </b><a href="https://t.me/c/{chatid}/{download.message.message_id}">{download.message.from_user.first_name}</a>'
                     except:
                         pass
-                else:
-                    msg += f'\n<b>User:</b> ️<code>{download.message.from_user.first_name}</code> | <b>Id:</b> <code>{download.message.from_user.id}</code>'
-                msg += f"\n<b>To Stop: </b><code>/{BotCommands.CancelMirror} {download.gid()}</code>"
+                msg += f"\n<b>└ To Stop: </b><code>/{BotCommands.CancelMirror} {download.gid()}</code>"
             elif download.status() == MirrorStatus.STATUS_SEEDING:
-                msg += f"\n<b>Size: </b>{download.size()}"
-                msg += f"\n<b>Speed: </b>{get_readable_file_size(download.torrent_info().upspeed)}/s"
-                msg += f"\n<b>Engine: </b> {download.eng()}"
-                msg += f" | <b>Uploaded: </b>{get_readable_file_size(download.torrent_info().uploaded)}"
-                msg += f"\n<b>Ratio: </b>{round(download.torrent_info().ratio, 3)}"
-                msg += f" | <b>Time: </b>{get_readable_time(download.torrent_info().seeding_time)}"
+                msg += f"\n<b>├ Size: </b>{download.size()}"
+                msg += f"\n<b>├ Speed: </b>{get_readable_file_size(download.torrent_info().upspeed)}/s"
+                msg += f"\n<b>├ Engine: </b> {download.eng()}"
+                msg += f"\n<b>├ Uploaded: </b>{get_readable_file_size(download.torrent_info().uploaded)}"
+                msg += f"\n<b>├ Ratio: </b>{round(download.torrent_info().ratio, 3)}"
+                msg += f"\n<b>├ Time: </b>{get_readable_time(download.torrent_info().seeding_time)}"
                 msg += f"\n<code>/{BotCommands.CancelMirror} {download.gid()}</code>"
             else:
-                msg += f"\n<b>Size: </b>{download.size()}"
+                msg += f"\n<b>└ Size: </b>{download.size()}"
             msg += "\n\n"
             if STATUS_LIMIT is not None and index == STATUS_LIMIT:
                 break
-        bmsg = f"<b>CPU:</b> {cpu_percent()}% | <b>FREE:</b> {get_readable_file_size(disk_usage(DOWNLOAD_DIR).free)}"
+        bmsg = f"▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n<b>CPU:</b> {cpu_percent()}% | <b>FREE:</b> {get_readable_file_size(disk_usage(DOWNLOAD_DIR).free)}"
         bmsg += f"\n<b>RAM:</b> {virtual_memory().percent}% | <b>UPTIME:</b> {get_readable_time(time() - botStartTime)}"
         dlspeed_bytes = 0
         upspeed_bytes = 0
@@ -341,15 +344,23 @@ def bot_sys_stats():
                 num_extract += 1
        if stats.status() == MirrorStatus.STATUS_SPLITTING:
                 num_split += 1
-    return f"""
-BOT UPTIME: {currentTime}\n
-CPU : {cpu}% || RAM : {mem_p}%\n
-USED : {used} || FREE :{free}
-SENT : {sent} || RECV : {recv}\n
+    stats = f"""
+┌ BOT UPTIME: {currentTime}
+├ CPU : {cpu}%
+├ RAM : {mem_p}%
+├ USED : {used}
+├ FREE :{free}
+├ SENT : {sent}
+└ RECV : {recv}
 ONGOING TASKS:
-DL: {num_active} || UP : {num_upload} || SPLIT : {num_split}
-ZIP : {num_archi} || UNZIP : {num_extract} || TOTAL : {tasks} 
+┌ DL: {num_active}
+├ UP : {num_upload}
+├ SPLIT : {num_split}
+├ ZIP : {num_archi}
+├ UNZIP : {num_extract}
+└ TOTAL : {tasks} 
 """
+    return stats
 dispatcher.add_handler(
-    CallbackQueryHandler(pop_up_stats, pattern=f"^{str(FOUR)}$")
+    CallbackQueryHandler(pop_up_stats, pattern="^" + str(FOUR) + "$")
 )
