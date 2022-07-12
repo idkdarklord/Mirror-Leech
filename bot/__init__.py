@@ -108,7 +108,7 @@ AUTHORIZED_CHATS = set()
 SUDO_USERS = set()
 AS_DOC_USERS = set()
 AS_MEDIA_USERS = set()
-EXTENTION_FILTER = {'.torrent'}
+EXTENTION_FILTER = set(['.torrent'])
 LEECH_LOG = set()
 MIRROR_LOGS = set()
 try:
@@ -152,7 +152,7 @@ try:
     parent_id = getConfig('GDRIVE_FOLDER_ID')
     DOWNLOAD_DIR = getConfig('DOWNLOAD_DIR')
     if not DOWNLOAD_DIR.endswith("/"):
-        DOWNLOAD_DIR = f'{DOWNLOAD_DIR}/'
+        DOWNLOAD_DIR = DOWNLOAD_DIR + '/'
     DOWNLOAD_STATUS_UPDATE_INTERVAL = int(getConfig('DOWNLOAD_STATUS_UPDATE_INTERVAL'))
     OWNER_ID = int(getConfig('OWNER_ID'))
     AUTO_DELETE_MESSAGE_DURATION = int(getConfig('AUTO_DELETE_MESSAGE_DURATION'))
@@ -166,6 +166,7 @@ try:
 except KeyError as e:
     AUTO_DELETE_UPLOAD_MESSAGE_DURATION = -1
     LOGGER.warning("AUTO_DELETE_UPLOAD_MESSAGE_DURATION var missing!")
+    pass
 LOGGER.info("Generating BOT_SESSION_STRING")
 app = Client(name='pyrogram', api_id=int(TELEGRAM_API), api_hash=TELEGRAM_HASH, bot_token=BOT_TOKEN, parse_mode=enums.ParseMode.HTML, no_updates=True)
 
@@ -204,7 +205,7 @@ try:
 except KeyError:
     MEGA_API_KEY = None
     LOGGER.info("MEGA API KEY NOT AVAILABLE")
-if MEGAREST:
+if MEGAREST is True:
     # Start megasdkrest binary
     Popen(["megasdkrest", "--apikey", MEGA_API_KEY])
     sleep(3)  # Wait for the mega server to start listening
@@ -452,30 +453,30 @@ except:
 try:
     AUTHOR_NAME = getConfig('AUTHOR_NAME')
     if len(AUTHOR_NAME) == 0:
-        AUTHOR_NAME = 'Dark Lord'
+        AUTHOR_NAME = 'Arsh Sisodiya'
 except KeyError:
-    AUTHOR_NAME = 'Dark Lord'
+    AUTHOR_NAME = 'Arsh Sisodiya'
 
 try:
     AUTHOR_URL = getConfig('AUTHOR_URL')
     if len(AUTHOR_URL) == 0:
-        AUTHOR_URL = 'https://t.me/darklordmirror'
+        AUTHOR_URL = 'https://t.me/heliosmirror'
 except KeyError:
-    AUTHOR_URL = 'https://t.me/darklordmirror'
+    AUTHOR_URL = 'https://t.me/heliosmirror'
 
 try:
     GD_INFO = getConfig('GD_INFO')
     if len(GD_INFO) == 0:
-        GD_INFO = 'Uploaded by Dark Lord Mirror-Bot'
+        GD_INFO = 'Uploaded by Helios Mirror Bot'
 except KeyError:
-    GD_INFO = 'Uploaded by Dark Lord Mirror-Bot'
+    GD_INFO = 'Uploaded by Helios Mirror Bot'
 
 try:
     TITLE_NAME = getConfig('TITLE_NAME')
     if len(TITLE_NAME) == 0:
-        TITLE_NAME = 'Dark Lord-Mirror-Search'
+        TITLE_NAME = 'Helios-Mirror-Search'
 except KeyError:
-    TITLE_NAME = 'Dark Lord-Mirror-Search'
+    TITLE_NAME = 'Helios-Mirror-Search'
 try:
     SOURCE_LINK = getConfig('SOURCE_LINK')
     SOURCE_LINK = SOURCE_LINK.lower() == 'true'
@@ -486,19 +487,6 @@ try:
     BOT_PM = BOT_PM.lower() == 'true'
 except KeyError:
     BOT_PM = False
-try:
-    FSUB = getConfig('FSUB')
-    FSUB = FSUB.lower() == 'true'
-except:
-    FSUB = False
-    LOGGER.info("Force Subscribe is disabled")
-try:
-    CHANNEL_USERNAME = getConfig("CHANNEL_USERNAME")
-    if len(CHANNEL_USERNAME) == 0:
-        raise KeyError
-except KeyError:
-    log_info("CHANNEL_USERNAME not provided! Using default @darklordmirror")
-    CHANNEL_USERNAME = "darklordmirror"
 try:
     APPDRIVE_EMAIL = getConfig('APPDRIVE_EMAIL')
     APPDRIVE_PASS = getConfig('APPDRIVE_PASS')
