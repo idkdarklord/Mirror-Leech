@@ -192,7 +192,7 @@ help_string = f'''
 Hei, Need Help!!
 '''
 help = telegraph.create_page(
-        title='Helios-Mirror Help',
+        title='Dark Lord-Mirror Help',
         content=help_string_telegraph + sudo_help_string,
     )["path"]
 
