@@ -56,9 +56,9 @@ def getHerokuDetails(h_api_key, h_app_name):
         quota_used = result["quota_used"]
         quota_remain = account_quota - quota_used
         abc += f'<b></b>\n'
-        abc += f'<b>┌ Heroku Stats</b>\n'
-        abc += f'<b>│</b>\n'
-        abc += f"<b>├ Full</b>: {get_readable_time(account_quota)}\n"
+        abc += f'<b>Heroku Stats</b>\n'
+        abc += f'\n'
+        abc += f"<b>┌ Full</b>: {get_readable_time(account_quota)}\n"
         abc += f"<b>├ Used</b>: {get_readable_time(quota_used)}\n"
         abc += f"<b>├ Free</b>: {get_readable_time(quota_remain)}\n"
         # App Quota
@@ -116,7 +116,7 @@ def stats(update, context):
     mem_a = get_readable_file_size(memory.available)
     mem_u = get_readable_file_size(memory.used)
     stats = f'<b>┌ Bot Stats</b>\n' \
-            f'<b>│</b>\n' \
+            f'\n' \
             f'<b>├ Commit Date:</b> {last_commit}\n'\
             f'<b>├ Bot Uptime:</b> {currentTime}\n'\
             f'<b>├ OS Uptime:</b> {osUptime}\n'\
@@ -132,7 +132,7 @@ def stats(update, context):
             f'<b>├ Total Cores:</b> {t_core}\n'\
             f'<b>├ Total Memory:</b> {mem_t}\n'\
             f'<b>├ Free Memory:</b> {mem_a}\n'\
-            f'<b>└ Useage Of Memory:</b> {mem_u}\n'
+            f'<b>└ Usage Of Memory:</b> {mem_u}\n'
     heroku = getHerokuDetails(HEROKU_API_KEY, HEROKU_APP_NAME)
     if heroku: stats += heroku 
            
