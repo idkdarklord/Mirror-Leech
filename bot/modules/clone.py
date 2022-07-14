@@ -123,8 +123,7 @@ def _clone(message, bot, multi=0):
                     update_all_messages()
             except IndexError:
                 pass
-            msg += f'\n<b>├ Action: #clone </b>'
-        cc = f'\n<b>└ CC: </b>{tag}'
+        cc = f'\n<b>├ Action: #clone</b>\n<b>└ CC: </b>{tag}'
         if button in ["cancelled", ""]:
             sendMessage(f"{tag} {result}", bot, message)
         else:
