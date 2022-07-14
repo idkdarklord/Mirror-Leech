@@ -619,6 +619,10 @@ try:
     SEARCH_PLUGINS = jsnloads(SEARCH_PLUGINS)
 except:
     SEARCH_PLUGINS = None
+try:
+    IMAGE_STATS = getConfig('IMAGE_STATS')
+except:
+    IMAGE_STATS = 'https://file2directlink.herokuapp.com/61238246597303978202639124/AgADJLAx/photo_2022-07-14_12-27-09_.jpg'
 
 updater = tgUpdater(token=BOT_TOKEN, request_kwargs={'read_timeout': 20, 'connect_timeout': 15})
 bot = updater.bot
