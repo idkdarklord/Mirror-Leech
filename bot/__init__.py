@@ -86,7 +86,7 @@ if TORRENT_TIMEOUT is not None:
     with open("a2c.conf", "a+") as a:
         a.write(f"bt-stop-timeout={TORRENT_TIMEOUT}\n")
 with open("a2c.conf", "a+") as a:
-    a.write(f"bt-tracker=[{trackers}]")
+    a.write(f"bt-tracker={trackers}")
 srun(["extra-api", "--conf-path=/usr/src/app/a2c.conf"])
 alive = Popen(["python3", "alive.py"])
 sleep(0.5)
@@ -133,28 +133,43 @@ AUTHORIZED_CHATS = set()
 SUDO_USERS = set()
 AS_DOC_USERS = set()
 AS_MEDIA_USERS = set()
-EXTENSION_FILTER = set()
-
+EXTENTION_FILTER = set(['.torrent'])
+LEECH_LOG = set()
+MIRROR_LOGS = set()
 try:
     aid = getConfig('AUTHORIZED_CHATS')
-    aid = aid.split()
+    aid = aid.split(' ')
     for _id in aid:
-        AUTHORIZED_CHATS.add(int(_id.strip()))
+        AUTHORIZED_CHATS.add(int(_id))
 except:
     pass
 try:
     aid = getConfig('SUDO_USERS')
-    aid = aid.split()
+    aid = aid.split(' ')
     for _id in aid:
-        SUDO_USERS.add(int(_id.strip()))
+        SUDO_USERS.add(int(_id))
 except:
     pass
 try:
-    fx = getConfig('EXTENSION_FILTER')
+    fx = getConfig('EXTENTION_FILTER')
     if len(fx) > 0:
-        fx = fx.split()
+        fx = fx.split(' ')
         for x in fx:
-            EXTENSION_FILTER.add(x.strip().lower())
+            EXTENTION_FILTER.add(x.lower())
+except:
+    pass
+try:
+    aid = getConfig('LEECH_LOG')
+    aid = aid.split(' ')
+    for _id in aid:
+        LEECH_LOG.add(int(_id))
+except:
+    pass
+try:
+    aid = getConfig('MIRROR_LOGS')
+    aid = aid.split(' ')
+    for _id in aid:
+        MIRROR_LOGS.add(int(_id))
 except:
     pass
 try:
@@ -169,9 +184,14 @@ try:
     TELEGRAM_API = getConfig('TELEGRAM_API')
     TELEGRAM_HASH = getConfig('TELEGRAM_HASH')
 except:
-    log.error("One or more env variables missing! Exiting now")
+    LOGGER.error("One or more env variables missing! Exiting now")
     exit(1)
-
+try:
+    AUTO_DELETE_UPLOAD_MESSAGE_DURATION = int(getConfig('AUTO_DELETE_UPLOAD_MESSAGE_DURATION'))
+except KeyError as e:
+    AUTO_DELETE_UPLOAD_MESSAGE_DURATION = -1
+    LOGGER.warning("AUTO_DELETE_UPLOAD_MESSAGE_DURATION var missing!")
+    pass
 LOGGER.info("Generating BOT_SESSION_STRING")
 app = Client(name='pyrogram', api_id=int(TELEGRAM_API), api_hash=TELEGRAM_HASH, bot_token=BOT_TOKEN, parse_mode=enums.ParseMode.HTML, no_updates=True)
 
@@ -187,7 +207,7 @@ except:
 def aria2c_init():
     try:
         log_info("Initializing Aria2c")
-        link = "https://linuxmint.com/torrents/lmde-5-cinnamon-64bit.iso.torrent"
+        link = "https://releases.ubuntu.com/21.10/ubuntu-21.10-desktop-amd64.iso.torrent"
         dire = DOWNLOAD_DIR.rstrip("/")
         aria2.add_uris([link], {'dir': dire})
         sleep(3)
@@ -380,7 +400,7 @@ try:
     VIEW_LINK = getConfig('VIEW_LINK')
     VIEW_LINK = VIEW_LINK.lower() == 'true'
 except:
-    VIEW_LINK = False    
+    VIEW_LINK = False
 try:
     IS_TEAM_DRIVE = getConfig('IS_TEAM_DRIVE')
     IS_TEAM_DRIVE = IS_TEAM_DRIVE.lower() == 'true'
@@ -437,47 +457,59 @@ try:
 except:
     CRYPT = None
 try:
-    UNIFIED_EMAIL = getConfig('UNIFIED_EMAIL')
-    if len(UNIFIED_EMAIL) == 0:
-        raise KeyError
-except:
-    UNIFIED_EMAIL = None
+    AUTHOR_NAME = getConfig('AUTHOR_NAME')
+    if len(AUTHOR_NAME) == 0:
+        AUTHOR_NAME = 'Arsh Sisodiya'
+except KeyError:
+    AUTHOR_NAME = 'Arsh Sisodiya'
+
 try:
-    UNIFIED_PASS = getConfig('UNIFIED_PASS')
-    if len(UNIFIED_PASS) == 0:
-        raise KeyError
-except:
-    UNIFIED_PASS = None
+    AUTHOR_URL = getConfig('AUTHOR_URL')
+    if len(AUTHOR_URL) == 0:
+        AUTHOR_URL = 'https://t.me/heliosmirror'
+except KeyError:
+    AUTHOR_URL = 'https://t.me/heliosmirror'
+
 try:
-    HUBDRIVE_CRYPT = getConfig('HUBDRIVE_CRYPT')
-    if len(HUBDRIVE_CRYPT) == 0:
-        raise KeyError
-except:
-    HUBDRIVE_CRYPT = None
+    GD_INFO = getConfig('GD_INFO')
+    if len(GD_INFO) == 0:
+        GD_INFO = 'Uploaded by Helios Mirror Bot'
+except KeyError:
+    GD_INFO = 'Uploaded by Helios Mirror Bot'
+
 try:
-    KATDRIVE_CRYPT = getConfig('KATDRIVE_CRYPT')
-    if len(KATDRIVE_CRYPT) == 0:
-        raise KeyError
-except:
-    KATDRIVE_CRYPT = None
+    TITLE_NAME = getConfig('TITLE_NAME')
+    if len(TITLE_NAME) == 0:
+        TITLE_NAME = 'Helios-Mirror-Search'
+except KeyError:
+    TITLE_NAME = 'Helios-Mirror-Search'
 try:
-    DRIVEFIRE_CRYPT = getConfig('DRIVEFIRE_CRYPT')
-    if len(DRIVEFIRE_CRYPT) == 0:
-        raise KeyError
-except:
-    DRIVEFIRE_CRYPT = None
+    SOURCE_LINK = getConfig('SOURCE_LINK')
+    SOURCE_LINK = SOURCE_LINK.lower() == 'true'
+except KeyError:
+    SOURCE_LINK = False
 try:
-    XSRF_TOKEN = getConfig('XSRF_TOKEN')
-    if len(XSRF_TOKEN) == 0:
-        raise KeyError
-except:
-    XSRF_TOKEN = None
+    BOT_PM = getConfig('BOT_PM')
+    BOT_PM = BOT_PM.lower() == 'true'
+except KeyError:
+    BOT_PM = False
 try:
-    laravel_session = getConfig('laravel_session')
-    if len(laravel_session) == 0:
+    APPDRIVE_EMAIL = getConfig('APPDRIVE_EMAIL')
+    APPDRIVE_PASS = getConfig('APPDRIVE_PASS')
+    if len(APPDRIVE_EMAIL) == 0 or len(APPDRIVE_PASS) == 0:
         raise KeyError
-except:
-    laravel_session = None
+except KeyError:
+    APPDRIVE_EMAIL = None
+    APPDRIVE_PASS = None
+try:
+    HEROKU_API_KEY = getConfig('HEROKU_API_KEY')
+    HEROKU_APP_NAME = getConfig('HEROKU_APP_NAME')
+    if len(HEROKU_API_KEY) == 0 or len(HEROKU_APP_NAME) == 0:
+        raise KeyError
+except KeyError:
+    LOGGER.warning("Heroku details not entered.")
+    HEROKU_API_KEY = None
+    HEROKU_APP_NAME = None
 try:
     TOKEN_PICKLE_URL = getConfig('TOKEN_PICKLE_URL')
     if len(TOKEN_PICKLE_URL) == 0:
@@ -566,19 +598,6 @@ try:
     SEARCH_PLUGINS = jsnloads(SEARCH_PLUGINS)
 except:
     SEARCH_PLUGINS = None
-try:
-    HEROKU_API_KEY = getConfig('HEROKU_API_KEY')
-    HEROKU_APP_NAME = getConfig('HEROKU_APP_NAME')
-    if len(HEROKU_API_KEY) == 0 or len(HEROKU_APP_NAME) == 0:
-        raise KeyError
-except KeyError:
-    LOGGER.warning("Heroku details not entered.")
-    HEROKU_API_KEY = None
-    HEROKU_APP_NAME = None
-try:
-    IMAGE_URL = getConfig('IMAGE_URL')
-except KeyError:
-    IMAGE_URL = 'https://telegra.ph/file/6b22ef7b8a733c5131d3f.jpg'
 
 updater = tgUpdater(token=BOT_TOKEN, request_kwargs={'read_timeout': 20, 'connect_timeout': 15})
 bot = updater.bot
