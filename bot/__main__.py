@@ -20,6 +20,7 @@ from .helper.telegram_helper.button_build import ButtonMaker
 from .helper.ext_utils.heroku_helper import getHerokuDetails
 from .modules import authorize, list, cancel_mirror, mirror_status, mirror, clone, watch, shell, eval, delete, count, leech_settings, search, rss
 
+IMAGE_X = "https://file2directlink.herokuapp.com/61238246597303978202639124/AgADJLAx/photo_2022-07-14_12-27-09_.jpg"
 
 def stats(update, context):
     if ospath.exists('.git'):
