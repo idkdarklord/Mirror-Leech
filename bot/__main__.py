@@ -23,7 +23,7 @@ from .modules import authorize, list, cancel_mirror, mirror_status, mirror, clon
 
 def stats(update, context):
     if ospath.exists('.git'):
-        last_commit = check_output(["git log -1 --date=short --pretty=format:"], shell=True).decode()
+        last_commit = check_output(["git log -1 --date=short --pretty=format:''"], shell=True).decode()
     else:
         last_commit = 'No UPSTREAM_REPO'
     currentTime = get_readable_time(time() - botStartTime)
@@ -60,7 +60,7 @@ def stats(update, context):
             f'<b>├ Memory Total:</b> {mem_t}\n'\
             f'<b>└ Memory Used:</b> {mem_u}\n'
     heroku = getHerokuDetails(HEROKU_API_KEY, HEROKU_APP_NAME)
-    if heroku: abc += heroku
+    if heroku: stats += heroku
     sendMessage(stats, context.bot, update.message)
 
 
