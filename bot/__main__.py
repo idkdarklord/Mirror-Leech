@@ -23,7 +23,7 @@ from .modules import authorize, list, cancel_mirror, mirror_status, mirror, clon
 
 def stats(update, context):
     if ospath.exists('.git'):
-        last_commit = check_output(["git log -1 --date=short --pretty=format:'%cd \n<b>From</b> %cr'"], shell=True).decode()
+        last_commit = check_output(["git log -1 --date=short --pretty=format:"], shell=True).decode()
     else:
         last_commit = 'No UPSTREAM_REPO'
     currentTime = get_readable_time(time() - botStartTime)
@@ -47,7 +47,7 @@ def stats(update, context):
     mem_u = get_readable_file_size(memory.used)
     stats = f'<b>BOT STATS</b>\n' \
             f'<b>┌ Commit Date:</b> {last_commit}\n'\
-            f'<b>├ Online Time:</b> {currentTime}\n\n'\
+            f'<b>├ Online Time:</b> {currentTime}\n'\
             f'<b>├ Disk:</b> {total}\n'\
             f'<b>├ CPU:</b> {cpuUsage}%\n'\
             f'<b>├ RAM:</b> {mem_p}%\n'\
