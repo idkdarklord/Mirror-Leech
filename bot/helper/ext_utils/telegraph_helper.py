@@ -77,3 +77,4 @@ class TelegraphHelper:
             )
         return
 
+telegraph=TelegraphHelper('DarkLordlk', 'https://t.me/Dark_LordSL')
