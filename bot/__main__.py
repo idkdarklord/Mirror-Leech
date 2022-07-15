@@ -27,6 +27,7 @@ def stats(update, context):
     else:
         last_commit = 'No UPSTREAM_REPO'
     currentTime = get_readable_time(time() - botStartTime)
+    osUptime = get_readable_time(time() - boot_time())
     total, used, free, disk= disk_usage('/')
     total = get_readable_file_size(total)
     used = get_readable_file_size(used)
@@ -34,16 +35,20 @@ def stats(update, context):
     sent = get_readable_file_size(net_io_counters().bytes_sent)
     recv = get_readable_file_size(net_io_counters().bytes_recv)
     cpuUsage = cpu_percent(interval=0.5)
+    p_core = cpu_count(logical=False)
+    t_core = cpu_count(logical=True)
+    swap = swap_memory()
+    swap_p = swap.percent
+    swap_t = get_readable_file_size(swap.total)
     memory = virtual_memory()
     mem_p = memory.percent
     mem_t = get_readable_file_size(memory.total)
     mem_a = get_readable_file_size(memory.available)
     mem_u = get_readable_file_size(memory.used)
-    stats = f'<b>UPSTREAM STATUS</b>\n' \
+    stats = f'<b>BOT STATS</b>\n' \
             f'<b>┌ Commit Date:</b> {last_commit}\n'\
-            f'<b>└ Online Time:</b> {currentTime}\n\n'\
-    stats = f'<b>SYSTEM STATUS</b>\n' \        
-            f'<b>┌ Disk:</b> {total}\n'\
+            f'<b>├ Online Time:</b> {currentTime}\n\n'\
+            f'<b>├ Disk:</b> {total}\n'\
             f'<b>├ CPU:</b> {cpuUsage}%\n'\
             f'<b>├ RAM:</b> {mem_p}%\n'\
             f'<b>├ 𝚄𝙿:</b> {sent}\n'\
@@ -55,7 +60,7 @@ def stats(update, context):
             f'<b>├ Memory Total:</b> {mem_t}\n'\
             f'<b>└ Memory Used:</b> {mem_u}\n'
     heroku = getHerokuDetails(HEROKU_API_KEY, HEROKU_APP_NAME)
-    if heroku: stats += heroku
+    if heroku: abc += heroku
     sendMessage(stats, context.bot, update.message)
 
 
