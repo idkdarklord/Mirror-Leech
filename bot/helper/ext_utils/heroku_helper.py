@@ -60,11 +60,11 @@ def getHerokuDetails(h_api_key, h_app_name):
         account_quota = result["account_quota"]
         quota_used = result["quota_used"]
         quota_remain = account_quota - quota_used
-        abc += f'<b></b>\n'
-        abc += f'<b>HEROKU STATS</b>\n'
-        abc += f"<b>┌ Full</b>: {get_readable_time(account_quota)}\n"
-        abc += f"<b>├ Used</b>: {get_readable_time(quota_used)}\n"
-        abc += f"<b>├ Free</b>: {get_readable_time(quota_remain)}\n"
+        stats += f'<b></b>\n'
+        stats += f'<b>HEROKU STATS</b>\n'
+        stats += f"<b>┌ Full</b>: {get_readable_time(account_quota)}\n"
+        stats += f"<b>├ Used</b>: {get_readable_time(quota_used)}\n"
+        stats += f"<b>├ Free</b>: {get_readable_time(quota_remain)}\n"
         # App Quota
         AppQuotaUsed = 0
         OtherAppsUsage = 0
@@ -84,11 +84,11 @@ def getHerokuDetails(h_api_key, h_app_name):
                     LOGGER.error(t)
                     pass
         LOGGER.info(f"This App: {str(app.name)}")
-        abc += f"<b>├ App Usage:</b> {get_readable_time(AppQuotaUsed)}\n"
-        abc += f"<b>├ Other App(s):</b> {get_readable_time(OtherAppsUsage)}\n"
-        abc += f'<b>│</b>\n'
-        abc += f'<b>└ Powered By @darklordmirror</b>'
-        return abc
+        stats += f"<b>├ App Usage:</b> {get_readable_time(AppQuotaUsed)}\n"
+        stats += f"<b>├ Other App(s):</b> {get_readable_time(OtherAppsUsage)}\n"
+        stats += f'<b>│</b>\n'
+        stats += f'<b>└ Powered By @darklordmirror</b>'
+        return stats
     except Exception as error:
         LOGGER.error(error)
         return None
