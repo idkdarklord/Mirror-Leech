@@ -459,23 +459,23 @@ except:
 try:
     AUTHOR_NAME = getConfig('AUTHOR_NAME')
     if len(AUTHOR_NAME) == 0:
-        AUTHOR_NAME = 'Arsh Sisodiya'
+        AUTHOR_NAME = 'Dark Lord'
 except KeyError:
-    AUTHOR_NAME = 'Arsh Sisodiya'
+    AUTHOR_NAME = 'Dark Lord'
 
 try:
     AUTHOR_URL = getConfig('AUTHOR_URL')
     if len(AUTHOR_URL) == 0:
-        AUTHOR_URL = 'https://t.me/heliosmirror'
+        AUTHOR_URL = 'https://t.me/Dark_LordSl'
 except KeyError:
-    AUTHOR_URL = 'https://t.me/heliosmirror'
+    AUTHOR_URL = 'https://t.me/Dark_LordSl'
 
 try:
     GD_INFO = getConfig('GD_INFO')
     if len(GD_INFO) == 0:
-        GD_INFO = 'Uploaded by Helios Mirror Bot'
+        GD_INFO = ''
 except KeyError:
-    GD_INFO = 'Uploaded by Helios Mirror Bot'
+    GD_INFO = 'Uploaded by Dark Lord Mirror-Leech Bot'
 
 try:
     TITLE_NAME = getConfig('TITLE_NAME')
@@ -488,6 +488,27 @@ try:
     SOURCE_LINK = SOURCE_LINK.lower() == 'true'
 except KeyError:
     SOURCE_LINK = False
+try:
+    FSUB = getConfig('FSUB')
+    FSUB = FSUB.lower() == 'true'
+except:
+    FSUB = False
+    LOGGER.info("Force Subscribe is disabled")
+try:
+    CHANNEL_USERNAME = getConfig("CHANNEL_USERNAME")
+    if len(CHANNEL_USERNAME) == 0:
+        raise KeyError
+except KeyError:
+    log_info("CHANNEL_USERNAME not provided! Using default @darklordmirror")
+    CHANNEL_USERNAME = "darklordmirror"
+try:
+    FSUB_CHANNEL_ID = getConfig("FSUB_CHANNEL_ID")
+    if len(FSUB_CHANNEL_ID) == 0:
+        raise KeyError
+    FSUB_CHANNEL_ID = int(FSUB_CHANNEL_ID)
+except KeyError:
+    log_info("CHANNEL_ID not provided! Using default id of @Z_Mirror")
+    FSUB_CHANNEL_ID = -1001779452858
 try:
     BOT_PM = getConfig('BOT_PM')
     BOT_PM = BOT_PM.lower() == 'true'
